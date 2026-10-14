@@ -63,8 +63,11 @@ if(ANDROID)
 	# file_redirect_hook/gsl_alloc_hook) that ship in the apk's
 	# lib/<abi>/ and get dlopen'd by the loaded driver.
 	add_subdirectory(3rdparty/adrenotools)
+	# Reader fork: the text engine, and the bridge to the app's reading layer.
+	add_subdirectory(reader)
 	add_library(emucore SHARED
 		native-lib.cpp
+		reader/reader_jni.cpp
 		tests/arm64/codegen_tests.cpp
 		tests/arm64/codegen_tests_main.cpp
 		tests/arm64/run_tests.cpp

@@ -948,6 +948,9 @@ class Main: ComponentActivity() {
         customDriverId.value = prefs.getString("customDriverId", null)?.takeIf { it.isNotEmpty() }
         allFilesAccessGranted.value = !needsAllFilesAccess()
         surface.value = SurfaceCallbacks(this)
+        // Reader fork: the reading layer lies over the game's picture. Once this function is
+        // through: the app's own content is set further down, and would take its place.
+        window.decorView.post { com.armsx2.reader.ReaderGlue.attach(this, surface.value) }
         WindowCompat.setDecorFitsSystemWindows(window, false)
         WindowInsetsControllerCompat(window, window.decorView).let { controller ->
             controller.hide(WindowInsetsCompat.Type.systemBars())
@@ -1148,7 +1151,14 @@ class Main: ComponentActivity() {
         }
     }
 
+    // Reader fork: the reader's own buttons (its cursor's, the statistics') before the game's.
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        if (com.armsx2.reader.ReaderGlue.onKey(event)) return true
+        return super.dispatchKeyEvent(event)
+    }
+
     override fun dispatchGenericMotionEvent(ev: MotionEvent): Boolean {
+        if (com.armsx2.reader.ReaderGlue.onMotion(ev)) return true // Reader fork
         if (eState.value == EmuState.RUNNING) {
             // SOURCE_TOUCHSCREEN motion events go through dispatchTouchEvent,
             // not here — generic motion is gamepad / mouse / stylus. So any
@@ -1199,6 +1209,7 @@ class Main: ComponentActivity() {
         // / OOM-kill skip that path — every cold launch would otherwise
         // re-compile every TFX pipeline from scratch. No-op on OpenGL.
         NativeApp.flushShaderCache()
+        com.armsx2.reader.ReaderGlue.onPause() // Reader fork
         super.onPause()
     }
 
@@ -1214,10 +1225,12 @@ class Main: ComponentActivity() {
         // MANAGE_EXTERNAL_STORAGE toggle. The setContent block reads
         // this to decide whether to show the grant screen.
         allFilesAccessGranted.value = !needsAllFilesAccess()
+        com.armsx2.reader.ReaderGlue.onResume() // Reader fork
         super.onResume()
     }
 
     override fun onDestroy() {
+        com.armsx2.reader.ReaderGlue.onDestroy(this) // Reader fork
         NativeApp.shutdown()
         super.onDestroy()
 

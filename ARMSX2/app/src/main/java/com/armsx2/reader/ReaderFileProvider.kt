@@ -1,0 +1,13 @@
+// SPDX-FileCopyrightText: ARMSX2 Reader fork contributors (from the PPSSPP Reader fork)
+// SPDX-License-Identifier: GPL-3.0+
+
+package com.armsx2.reader
+
+import androidx.core.content.FileProvider
+
+/**
+ * Hands the reader's files to other apps: card media for AnkiDroid and statistics exports. A
+ * class of its own because the emulator already declares a FileProvider, and a manifest can
+ * name a class only once.
+ */
+class ReaderFileProvider : FileProvider()

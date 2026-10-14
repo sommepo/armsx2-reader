@@ -44,6 +44,7 @@
 #include "USB/USB.h"
 #include "Vif_Dynarec.h"
 #include "VMManager.h"
+#include "reader/core/emulator.h" // Reader fork
 #if defined(__aarch64__) || defined(_M_ARM64)
 #include "arm64/arm64Emitter.h"
 #include "arm64/aVU0.h"
@@ -1269,6 +1270,8 @@ void VMManager::ReportGameChangeToHost()
 	const std::string game_title = GetTitle(prefer_english);
 	FullscreenUI::GameChanged(disc_path, s_disc_serial, game_title, s_disc_crc, crc_to_report);
 	Host::OnGameChanged(game_title, s_elf_override, disc_path, s_disc_serial, s_disc_crc, crc_to_report);
+	// Reader fork: the text engine learns which program runs, and loads its text profile.
+	Reader::Emu::OnGameChanged(s_disc_serial, crc_to_report, game_title);
 }
 
 bool VMManager::HasBootedELF()
@@ -1697,6 +1700,9 @@ void VMManager::Shutdown(bool save_resume_state)
 	// but just in case, so any of the stuff we call here knows we don't have a valid VM.
 	s_state.store(VMState::Stopping, std::memory_order_release);
 
+	// Reader fork: the reading session ends with the game.
+	Reader::Emu::OnShutdown();
+
 	SetTimerResolutionIncreased(false);
 
 	// sync everything
@@ -1962,6 +1968,7 @@ bool VMManager::DoLoadState(const char* filename, Error* error)
 		return false;
 
 	Host::OnSaveStateLoaded(filename, true);
+	Reader::Emu::OnStateLoaded(); // Reader fork
 	if (g_InputRecording.isActive())
 	{
 		g_InputRecording.handleLoadingSavestate();
@@ -3050,6 +3057,9 @@ void VMManager::Internal::EntryPointCompilingOnCPUThread()
 
 void VMManager::Internal::VSyncOnCPUThread()
 {
+	// Reader fork: a text profile looks at the game's memory once a frame.
+	Reader::Emu::OnFrame();
+
 	Pad::UpdateMacroButtons();
 
 	Patch::ApplyVsyncPatches();

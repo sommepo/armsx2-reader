@@ -131,6 +131,19 @@ object GamesList {
             }
         }
 
+        // Reader fork: the PS2's own menu in the library's place, unless switched off under
+        // its System Configuration.
+        if (com.armsx2.reader.ui.Ps2Glue.wanted()) {
+            com.armsx2.reader.ui.Ps2Glue.Screen(
+                games = games,
+                onLaunch = { launchGame(it) },
+                onScan = {
+                    if (!scanning.value && romsDirs.isNotEmpty()) scanRoms(context, romsDirs, romsKey)
+                },
+            )
+            return
+        }
+
         Box(
             Modifier
                 .fillMaxSize()

@@ -24,6 +24,12 @@
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
 
+    <!-- Reader fork: AnkiDroid, for cards. -->
+    <queries>
+        <package android:name="com.ichi2.anki" />
+        <provider android:authorities="com.ichi2.anki.flashcards" />
+    </queries>
+
     <application
         android:name=".Pasx2Application"
         android:allowBackup="true"
@@ -103,6 +109,62 @@
                 <data android:scheme="file" />
             </intent-filter>
         </activity-alias>
+
+        <!-- Reader fork: the reading layer's own screens, and the files it hands to Anki. -->
+        <activity
+            android:name=".reader.ui.ReaderSettingsActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|uiMode"
+            android:theme="@style/Theme.Reader"
+            android:label="@string/reader_settings"/>
+        <activity
+            android:name=".reader.ui.ReaderStatsActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|uiMode"
+            android:theme="@style/Theme.Reader"
+            android:label="@string/reader_statistics"/>
+        <activity
+            android:name=".reader.ui.ReaderGamesActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|uiMode"
+            android:theme="@style/Theme.Reader"
+            android:label="@string/reader_games"/>
+        <activity
+            android:name=".reader.ui.CrtSettingsActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|uiMode"
+            android:theme="@style/Theme.Reader"
+            android:label="@string/reader_games"/>
+        <activity
+            android:name=".reader.ui.DictionaryManagerActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|uiMode"
+            android:theme="@style/Theme.Reader"
+            android:label="@string/reader_dictionaries"/>
+        <activity
+            android:name=".reader.ui.AnkiSetupActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|uiMode"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.Reader"
+            android:label="@string/reader_anki_setup"/>
+        <activity
+            android:name=".reader.ui.ReaderBacklogActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|uiMode"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.Reader"
+            android:label="@string/reader_backlog"/>
+
+        <provider
+            android:name=".reader.ReaderFileProvider"
+            android:authorities="${applicationId}.reader.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/reader_file_paths" />
+        </provider>
     </application>
 
 

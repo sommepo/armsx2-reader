@@ -23,12 +23,26 @@ object TouchControls {
     private const val KEY_PROFILES = "touch.profiles"
     private const val KEY_ACTIVE = "touch.active"
     private const val KEY_OPACITY = "touch.opacity"
+    // Reader fork: whether the on-screen controls are wanted at all. Off unless switched on
+    // (System Configuration, "On-screen Controller"): a touch on the game is a word looked
+    // up here, and brought the controls up over the text.
+    private const val KEY_WANTED = "touch.wanted"
+
+    /** Reader fork: the user's choice; while false [visible] stays false. Persisted. */
+    val wanted = mutableStateOf(false)
+
+    /** Reader fork: switches the on-screen controls on or off for good. */
+    fun setWanted(value: Boolean) {
+        wanted.value = value
+        visible.value = value
+        runCatching { Main.prefs.edit().putBoolean(KEY_WANTED, value).apply() }
+    }
 
     /** Visible to the user. False when a controller is being used (latched
      *  off in onControllerInputDetected); flipped back on by any screen
      *  touch via onSurfaceTouched. Default true so first-run users see
      *  the controls. */
-    val visible = mutableStateOf(true)
+    val visible = mutableStateOf(false) // Reader fork: was true; see [wanted]
 
     /** Edit mode — buttons are draggable + resizable, JNI pad writes are
      *  suppressed. Toggled from InGameOverlay's "Edit Touch Controls"
@@ -92,6 +106,8 @@ object TouchControls {
         val match = list.firstOrNull { it.name == active } ?: list.first()
         activeLayout.value = match.layout.copy()
         opacity.value = Main.prefs.getFloat(KEY_OPACITY, 0.55f).coerceIn(0.20f, 1.0f)
+        wanted.value = Main.prefs.getBoolean(KEY_WANTED, false) // Reader fork
+        visible.value = wanted.value
     }
 
     private fun persist() {
@@ -180,7 +196,7 @@ object TouchControls {
     /** Latched on by any pointer-down on the surface so a controller user
      *  who touches the screen sees the controls again. */
     fun onSurfaceTouched() {
-        if (!visible.value) visible.value = true
+        if (wanted.value && !visible.value) visible.value = true // Reader fork: only when wanted
     }
 }
 

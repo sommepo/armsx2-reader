@@ -12,7 +12,8 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.armsx2"
+        // Reader fork: an app of its own, beside an ARMSX2 on the same device.
+        applicationId = "io.github.sommepo.armsx2reader"
         minSdk = 26
         targetSdk = 36
         versionCode = 15
@@ -70,6 +71,14 @@ android {
             }
         }
     }
+    // Reader fork: a published build (-PreaderBundleScripts=false) comes with no game scripts;
+    // they are installed from the published list (System Configuration, Game Scripts). The
+    // patterns before the last are aapt's own defaults.
+    if (providers.gradleProperty("readerBundleScripts").orNull == "false") {
+        androidResources {
+            ignoreAssetsPattern = "!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~:!<dir>profiles"
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -77,6 +86,17 @@ android {
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
+        }
+    }
+    // Reader fork: tests see the app's resources, and are told where to write pictures.
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            all {
+                it.systemProperty("reader.preview.dir", System.getenv("READER_PREVIEW_DIR") ?: "")
+                it.systemProperty("robolectric.graphicsMode", "NATIVE")
+                it.systemProperty("robolectric.pixelCopyRenderMode", "hardware")
+            }
         }
     }
     buildFeatures {
@@ -128,8 +148,18 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.documentfile)
     implementation(libs.coil.compose)
+    // Reader fork: the reading layer's settings pages and lists.
+    implementation("androidx.preference:preference:1.2.1")
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
 
     testImplementation(libs.junit)
+    // Reader fork: the reading layer's tests run off the device, and draw its screens there.
+    testImplementation("org.robolectric:robolectric:4.14.1")
+    testImplementation("org.json:json:20240303")
+    testImplementation("androidx.test:core:1.6.1")
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     debugImplementation(libs.androidx.compose.ui.tooling)

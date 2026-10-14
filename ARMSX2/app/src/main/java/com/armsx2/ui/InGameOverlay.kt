@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import compose.icons.LineAwesomeIcons
+import compose.icons.lineawesomeicons.FastForwardSolid
 import compose.icons.lineawesomeicons.CompactDiscSolid
 import compose.icons.lineawesomeicons.CubeSolid
 import compose.icons.lineawesomeicons.EyeSlashSolid
@@ -1145,7 +1146,21 @@ object InGameOverlay {
                     accent = BubbleAccent.Danger,
                     modifier = Modifier.weight(1f),
                 ) { state.value = State.ExitConfirm }
-                Spacer(Modifier.weight(1f))
+                // Reader fork: run the game on to its next choice (com.armsx2.reader.NextChoice),
+                // in the place that was left empty.
+                if (com.armsx2.reader.ReaderSession.isActive) {
+                    BubbleButton(
+                        "Next Choice",
+                        LineAwesomeIcons.FastForwardSolid,
+                        stateLine = if (com.armsx2.reader.NextChoice.going.value) "Going" else null,
+                        modifier = Modifier.weight(1f),
+                    ) {
+                        closeAndResume()
+                        com.armsx2.reader.NextChoice.toggle()
+                    }
+                } else {
+                    Spacer(Modifier.weight(1f))
+                }
             }
         }
     }

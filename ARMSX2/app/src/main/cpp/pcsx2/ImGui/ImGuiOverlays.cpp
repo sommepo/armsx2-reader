@@ -1779,15 +1779,11 @@ void ImGuiManager::RenderOverlays()
 	const float spacing = std::ceil(5.0f * scale);
 	float position_y = margin;
 
-	DrawIndicatorsOverlay(position_y, scale, margin, spacing);
+	// Reader fork: nothing of the emulator's own is drawn over the game (its statistics, the
+	// settings line, the controllers, the pause and speed marks, the shader compiling mark):
+	// the screen is the game's. Messages (DrawOSDMessages) and the save state selector stay.
 	DrawVideoCaptureOverlay(position_y, scale, margin, spacing);
 	DrawInputRecordingOverlay(position_y, scale, margin, spacing);
-	DrawTextureReplacementsOverlay(position_y, scale, margin, spacing);
-	if (GSConfig.OsdPerformancePos != OsdOverlayPos::None)
-		DrawPerformanceOverlay(position_y, scale, margin, spacing);
-	DrawSettingsOverlay(scale, margin, spacing);
-	DrawShaderCompileIndicator(scale, margin, spacing);
-	DrawInputsOverlay(scale, margin, spacing);
 	if (SaveStateSelectorUI::s_open)
 		SaveStateSelectorUI::Draw();
 }

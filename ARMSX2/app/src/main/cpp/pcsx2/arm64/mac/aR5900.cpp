@@ -3258,7 +3258,29 @@ static void recRecompile(u32 startpc)
 	RecGprConstState const_state;
 	RecGprCacheState cache_state;
 
-	for (;;)
+	// Reader fork: the Skip MPEG game fix (GameDB "SkipMPEG"), which only the x86
+	// recompiler had (iR5900.cpp skipMPEG_By_Pattern): a block that is the library's
+	// sceMpegIsEnd (lw reg, 0x40(a0); jr ra; lw v0, 0(reg)) returns 1 at once, so the game
+	// takes its film as over. Never7's films hung on a frame without it. (needs proper
+	// testing beyond Never7)
+	bool mpeg_skipped = false;
+	if (CHECK_SKIPMPEGHACK && memRead32(startpc + 4) == 0x03e00008)
+	{
+		const u32 code = memRead32(startpc);
+		const u32 load_result = 0x8c020000 | (code & 0x1f0000) << 5;
+		if ((code & 0xffe0ffff) == 0x8c800040 && memRead32(startpc + 8) == load_result)
+		{
+			recEmitStoreGprConst(2, 1); // v0 = 1
+			armAsm->Ldr(RSCRATCHADDR.W(), a64::MemOperand(RESTATEPTR, EE_GPR_OFFSET(31)));
+			armAsm->Str(RSCRATCHADDR.W(), a64::MemOperand(RESTATEPTR, EE_PC_OFFSET)); // return to ra
+			raw_cycles = eeOpCycles(code) + eeOpCycles(0x03e00008) + eeOpCycles(load_result);
+			endpc = startpc + 12;
+			mpeg_skipped = true;
+			Console.WriteLn(Color_StrongGreen, "sceMpegIsEnd pattern found! Recompiling skip video fix...");
+		}
+	}
+
+	while (!mpeg_skipped)
 	{
 		// Keep every block within a single host RAM page so its SMC protection mode (see
 		// recEmitManualProtection) governs the whole block, and so a page-fault clear of
