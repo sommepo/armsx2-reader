@@ -6,6 +6,8 @@ keep a backlog and reading statistics.
 
 The Windows version is [PCSX2 Reader](https://github.com/sommepo/pcsx2-reader).
 
+One of four [reader emulators](https://github.com/sommepo/readers) for PS2, PSP and Dreamcast games.
+
 <table>
   <tr>
     <td width="50%"><img src="docs/reader/media/two-screens-demo.gif" alt="The lower screen moves the cursor over words in ドラゴンクエストV's text"><br><sub>Two screens: the lower one is a trackpad</sub></td>
