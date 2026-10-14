@@ -306,7 +306,7 @@ class ReaderScreensTest {
             entries(page.preferenceScreen).map { it.title.toString() }
         )
         assertEquals(
-            "11 games whose text can be read",
+            "${ReaderCatalog.games(context).size} games whose text can be read",
             page.findPreference<Preference>("reader_open_games")!!.summary.toString()
         )
         // No setting is on this page: each is one tap further, on its section's page.
@@ -381,7 +381,7 @@ class ReaderScreensTest {
                 ReaderSettings.KEY_AUDIO_MAX, ReaderSettings.KEY_AUDIO_LEAD, ReaderSettings.KEY_SCREENSHOT_CACHE,
                 ReaderSettings.KEY_SCREENSHOT_WIDTH,
                 ReaderSettings.KEY_SESSION_HUD, ReaderSettings.KEY_STATS_PAUSED, ReaderSettings.KEY_STATS_BUTTON,
-                ReaderSettings.KEY_IDLE_MINUTES, ReaderSettings.KEY_STATS_SERVER, ReaderSettings.KEY_STATS_CODE,
+                ReaderSettings.KEY_IDLE_MINUTES, "reader_stats_sync_category", ReaderSettings.KEY_STATS_SERVER, ReaderSettings.KEY_STATS_CODE,
                 ReaderSettings.KEY_STATS_DEVICE,
                 ReaderSettings.KEY_HOOK_ENABLED, ReaderSettings.KEY_HOOK_PORT, ReaderSettings.KEY_HOOK_FORMAT,
                 ReaderSettings.KEY_HOOK_SPEAKER, ReaderSettings.KEY_HOOK_LAN, ReaderSettings.KEY_CLIPBOARD_AUTO

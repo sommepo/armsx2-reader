@@ -14,6 +14,10 @@ android {
     defaultConfig {
         // Reader fork: an app of its own, beside an ARMSX2 on the same device.
         applicationId = "io.github.sommepo.armsx2reader"
+        // Reader fork: false in a published build (-PreaderSaveSync=false): no statistics sent
+        // to a save sync service.
+        buildConfigField("boolean", "READER_SAVE_SYNC",
+            (providers.gradleProperty("readerSaveSync").orNull != "false").toString())
         minSdk = 26
         targetSdk = 36
         versionCode = 15

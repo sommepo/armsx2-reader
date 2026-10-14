@@ -129,13 +129,14 @@ class ReaderCatalogTest {
         assertNull(ReaderCatalog.titleIdOf("$aceAttorney.table.bin"))
         assertNull(ReaderCatalog.titleIdOf("notes.lua"))
 
+        val bundled = ReaderCatalog.games(context).size
         ownProfile(unknown, "-- reader: title 作り話\nlocal x = 1\n")
         ownProfile(aceAttorney, "-- reader: title My Ace Attorney profile\nlocal x = 1\n")
         ReaderCatalog.forget()
         assertTrue(ReaderCatalog.covers(context, unknown))
         assertTrue("however the ID is written", ReaderCatalog.covers(context, aceAttorney.lowercase()))
         val games = ReaderCatalog.games(context)
-        assertEquals(13, games.size)
+        assertEquals(bundled + 2, games.size)
         assertTrue(games.first { it.titleId == unknown }.own)
         val ace = games.single { it.titleId == aceAttorney }
         assertEquals("My Ace Attorney profile", ace.title)
