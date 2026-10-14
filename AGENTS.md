@@ -17,11 +17,12 @@ settings) in the console's colours; the layer over the game's picture with the p
 session line and the cursor; and natively a text engine that loads a game's profile and runs
 it once a frame, with its bridge to the app.
 
-**Eleven games have a profile**: ひぐらしのなく頃に祭 カケラ遊び (SLPM-66913), Remember11
+**Fourteen games have a profile**: ひぐらしのなく頃に祭 カケラ遊び (SLPM-66913), Remember11
 (SLPM-65550), Ever17 Premium Edition (SLPM-65421), Never7 (SLPS-25256), ペルソナ4
 (SLPM-66978), and since 2026-10-14 ペルソナ3 (SLPM-66445), ドラゴンクエストV (SLPM-65555),
 サイレントヒル2 (SLPM-65051), 真・女神転生III マニアクス (SLPM-65462), DIGITAL DEVIL
-SAGA (SLPM-65597) and アマガミ (SLPS-25918). The two ペルソナ, 真・女神転生III and DIGITAL DEVIL SAGA need a character
+SAGA (SLPM-65597), アマガミ (SLPS-25918), EVE burst error PLUS (SLPM-65320), うたわれるもの
+散りゆく者への子守唄 (SLPS-25679) and シャドウハーツ (SLPS-25041). The two ペルソナ, 真・女神転生III and DIGITAL DEVIL SAGA need a character
 table that is not in Git (see "Ground rules"). The profiles are the desktop sibling's,
 where they were written and seen to read the games (its guide's "Games" has what each
 covers; copy a change from there). **In this app ペルソナ4 and Never7 were seen to read** (an
