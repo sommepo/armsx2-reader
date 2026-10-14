@@ -50,7 +50,8 @@ here yet.
   `upstream` cannot be pushed to. Do not present this app as ARMSX2.
 - **No game data, no BIOS, in Git, ever.** Discs, the console's BIOS, anything extracted or
   derived from them, savestates, screenshots: under `private/`, which Git ignores. A bundled
-  profile holds addresses and decoding logic only. Tests use made-up text.
+  profile holds addresses and decoding logic only. Tests use made-up text. The one exception,
+  by the maintainer's word: the README's pictures and animations in `docs/reader/media`.
 - **A table made from a game is game data too** (a font's character table, as the two
   ペルソナ, 真・女神転生III and DIGITAL DEVIL SAGA need): it is `private/<game>/<SERIAL>.charset`, the profile asks for it with
   `reader.data("charset")`, and `tools/reader/private-data.sh`, which `build-android.sh`
@@ -158,6 +159,12 @@ names), and links two of them under the names the emulator's build looks for.
   reaches the game where `input keyevent` does not. A tap on a word in the picture opened
   nothing there; the trackpad and the cursor are the way in, and tapping is not looked into
   further (`MAINTAINER.md` has why).
+- **On a device** (AYN Thor, 2026-10-14): ドラゴンクエストV from a new adventure log to its
+  first messages, read with speakers; words looked up with the second display's trackpad and
+  by touching them on the game (where Never7 opened nothing); the CRT picture over it; the Game
+  scripts screen fetching the published list and updating a script from it. **PS2 Menu** in the
+  upstream library (`ui/GamesList.kt`) switches the PS2 menu back on after *Game List* switched
+  it off (before, nothing did).
 - **Not seen on a device**: the other games reading, anything of ペルソナ4 past its first
   message, a card, the reader's screens opened from System Configuration.
 

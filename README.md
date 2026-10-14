@@ -14,6 +14,15 @@ runs the same game scripts.
 > [README.armsx2.md](README.armsx2.md). The reading layer's code is AI-written; nothing from
 > here is to be sent upstream.
 
+<table>
+  <tr>
+    <td width="50%"><img src="docs/reader/media/two-screens-demo.gif" alt="On a two-screen handheld: strokes on the lower screen move the reader's cursor over 気持ち and わかります, and a popup opens for each"><br><sub><b>Two screens:</b> the lower one is the cursor's trackpad.</sub></td>
+    <td width="50%"><img src="docs/reader/media/one-screen-demo.gif" alt="One screen: 気持ち, わかります and パパ are touched in turn, and a popup opens for each"><br><sub><b>One screen:</b> touch the word.</sub></td>
+  </tr>
+</table>
+
+<sub>ドラゴンクエストV 天空の花嫁 on an AYN Thor, with the dictionary JMdict.</sub>
+
 ## What it does
 
 - **Look words up in the game's picture.** A word in a text box is real text: move the
@@ -29,6 +38,23 @@ runs the same game scripts.
 - It only does this for **games that have a game script** (below). Every other game runs as
   in ARMSX2.
 
+## What it looks like
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/reader/media/two-screens.jpg" alt="The game with the cursor on 気持ち and its popup, and below it the second screen as a trackpad"><br><sub><b>Two screens.</b> The cursor on 気持ち; the lower screen is the trackpad, so a hand never covers the game.</sub></td>
+    <td width="50%"><img src="docs/reader/media/one-screen.jpg" alt="A popup with 分かる, opened by touching わかります"><br><sub><b>One screen.</b> わかります touched, traced back to 分かる.</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/reader/media/browser.jpg" alt="The PS2-style Browser with game covers, a book badge on the games with a script"><br><sub><b>The Browser</b> of the PS2's own menu. A book marks a game with a script.</sub></td>
+    <td><img src="docs/reader/media/game-scripts.jpg" alt="The Game scripts screen with the published list and an Update button"><br><sub><b>Game scripts.</b> The published list, with Install, Update and Remove.</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/reader/media/crt.jpg" alt="The game shown as a CRT would show it, curved with scan lines, a word still looked up"><br><sub><b>The CRT picture</b> (Reader settings, CRT picture): scan lines, a bulging tube, glow. Lookups follow the bent glass.</sub></td>
+    <td><img src="docs/reader/media/menu.jpg" alt="The PS2-style main menu"><br><sub><b>The PS2's own menu</b> in place of the library.</sub></td>
+  </tr>
+</table>
+
 ## Get it
 
 From the [releases](../../releases) of this repository: `ARMSX2Reader-<version>-android.apk`
@@ -37,10 +63,14 @@ development key, not one of a store.
 
 As with ARMSX2, you bring your own games and the BIOS of your own console.
 
-**How far it has been tried**: on an AYN Thor, Never7 was read from its start into the story
-(the second screen's trackpad and the cursor, a word looked up, going on to the next choice);
-the other games were read only in PCSX2 Reader on a computer. No Anki card has been made with
-this app yet. [AGENTS.md](AGENTS.md) says what is there and what is not.
+**How far it has been tried**: on an AYN Thor, Never7 and ドラゴンクエストV were read (the
+second screen's trackpad and the cursor, words looked up by cursor and by touch, going on to
+the next choice in Never7), and the Game scripts screen updated a script from the published
+list; the other games were read only in PCSX2 Reader on a computer. No Anki card has been
+made with this app yet. [AGENTS.md](AGENTS.md) says what is there and what is not.
+
+If *Game List* under System Configuration switched the PS2 menu off, **PS2 Menu** at the top
+of the app's own library brings it back.
 
 ## Game scripts
 

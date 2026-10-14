@@ -402,6 +402,11 @@ object GamesList {
                 SetupImpl.resetForReentry()
                 Main.reopenSetup()
             }
+            // Reader fork: the way back to the PS2's own menu once its Game List entry
+            // switched it off.
+            ActionChip("PS2 Menu") {
+                com.armsx2.reader.ui.Ps2Home.setWanted(context, true)
+            }
         }
     }
 
