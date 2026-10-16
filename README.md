@@ -10,8 +10,8 @@ One of four [reader emulators](https://github.com/sommepo/readers) for PS2, PSP 
 
 <table>
   <tr>
-    <td width="50%"><img src="docs/reader/media/two-screens-demo.gif" alt="The lower screen moves the cursor over words in ドラゴンクエストV's text"><br><sub>Two screens: the lower one is a trackpad</sub></td>
-    <td width="50%"><img src="docs/reader/media/one-screen-demo.gif" alt="Touching words in ドラゴンクエストV's text"><br><sub>One screen: touch a word</sub></td>
+    <td width="50%"><img src="docs/reader/media/two-screens-demo.gif" alt="The lower screen moves the cursor over words in Never7's text, the outline gliding after it"><br><sub>Two screens: the lower one is a trackpad</sub></td>
+    <td width="50%"><img src="docs/reader/media/one-screen-demo.gif" alt="Touching words in Never7's text"><br><sub>One screen: touch a word</sub></td>
   </tr>
 </table>
 
@@ -24,12 +24,24 @@ One of four [reader emulators](https://github.com/sommepo/readers) for PS2, PSP 
 - **Look up words in the game's text.** Move the cursor onto a word (with the controller, or
   on a two-screen handheld with the lower screen as a trackpad). Touching a word works too.
   Uses Yomitan dictionaries.
+- **The word is outlined, and the outline glides** from word to word as you move along the
+  line. Highlight or no mark at all instead, in Reader settings.
+- **The popup stands right next to the word** and stays put while you go to its **+**, which
+  sits in the bottom left of each entry (or any corner you choose).
 - **Anki cards** in AnkiDroid, with the sentence and a picture of the scene.
 - **Backlog and reading statistics.**
 - **Next Choice**: run a visual novel at full speed to its next choice.
 - **The PS2's own menu** as the game list. **PS2 Menu** in the app's library switches it back
   on.
-- **CRT picture** (optional, in Reader settings).
+- **CRT picture** with a tube's frame around it (Reader settings).
+- **Play by touch** on a phone: a tap on the picture goes on, a tap on an answer picks it, and
+  the controller's buttons stand in a small column at the right edge that a tab tucks away. On
+  at first only on a device without controls of its own.
+- **Two-screen handhelds** (AYN Thor): the lower screen is a trackpad for the cursor, and the
+  controller stays the game's.
+- **Only the games that can be read are listed** at first (all of them, in a setting).
+- **Routes finished elsewhere**: mark the CLANNAD routes you finished on another copy, so the
+  game's own progress follows.
 
 <table>
   <tr>

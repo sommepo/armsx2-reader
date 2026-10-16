@@ -22,7 +22,7 @@ import org.json.JSONObject
  */
 object ScriptStore {
     /** The version of the profile API this app has. A script asks for one with `-- reader: api N`. */
-    const val API = 1
+    const val API = 2
 
     /** Where the list is fetched from. */
     const val DEFAULT_INDEX_URL =

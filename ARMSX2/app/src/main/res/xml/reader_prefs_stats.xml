@@ -31,25 +31,4 @@
         app:showSeekBarValue="true"
         app:title="@string/reader_pref_idle_minutes"
         app:iconSpaceReserved="false" />
-    <PreferenceCategory
-        app:key="reader_stats_sync_category"
-        app:title="@string/reader_pref_stats_sync"
-        app:iconSpaceReserved="false">
-        <EditTextPreference
-            app:key="reader_stats_server"
-            app:defaultValue=""
-            app:title="@string/reader_pref_stats_server"
-            app:summary="@string/reader_pref_stats_server_summary"
-            app:iconSpaceReserved="false" />
-        <EditTextPreference
-            app:key="reader_stats_code"
-            app:defaultValue=""
-            app:title="@string/reader_pref_stats_code"
-            app:iconSpaceReserved="false" />
-        <EditTextPreference
-            app:key="reader_stats_device"
-            app:defaultValue=""
-            app:title="@string/reader_pref_stats_device"
-            app:iconSpaceReserved="false" />
-    </PreferenceCategory>
 </PreferenceScreen>

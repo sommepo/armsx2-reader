@@ -12,6 +12,8 @@
 #include <functional>
 #include <string>
 
+#include "reader/save_sync/host.h"
+
 namespace Reader::Emu {
 
 /**
@@ -21,6 +23,23 @@ namespace Reader::Emu {
  */
 void OnGameChanged(const std::string& serial, uint32_t crc, const std::string& title);
 void OnShutdown();
+
+// Save sync (reader/save_sync): every game has a memory card of its own in the first slot,
+// an ordinary card file "card.ps2" in a folder named by the game's serial in "reader-saves"
+// of the memory cards folder, and that folder is what goes to the user's other devices.
+/// The memory cards are about to be opened for the disc with this serial (empty: none, the
+/// console's own menu). The game's card is made the first slot's, and its newest save is
+/// fetched first (this waits for the service, a few seconds at most when it is away).
+void BeforeMemoryCards(const std::string& serial, const std::string& title);
+/// The first slot's card while a game's own is in use: its file. Empty otherwise.
+std::string MemoryCardOverride();
+/// A memory card was written to.
+void OnMemoryCardWritten(unsigned slot);
+/// Save sync is started if it was not (the settings' page asks before any game ran).
+void EnsureSaveSync();
+/// The app's settings for save sync (its page): applied now, or once the emulator's folders
+/// are known.
+void ConfigureSaveSync(const SaveSync::Host::Settings& settings);
 /// A savestate was loaded: what the reader knew of the screen is no longer true.
 void OnStateLoaded();
 /// Once per frame of the display.
@@ -43,9 +62,9 @@ void OnAudio(const int16_t* samples, std::size_t frames);
 /// The same, as the emulator's mixer hands it on: samples from -1 to 1.
 void OnAudioFloat(const float* samples, std::size_t frames);
 
-/// Presses or releases a button of the first controller, by the number the reader's settings
-/// give it. Not carried out yet: the cursor steered with a controller waits for the input
-/// side of this file.
+/// Presses or releases an input of the first controller, by the emulator's own number of it
+/// (PadDualshock2::Inputs: 0 up, 1 right, 2 down, 3 left, 4 triangle, 5 circle, 6 cross,
+/// 7 square, 8 select, 9 start, 10 L1, 11 L2, 12 R1, 13 R2).
 void PressButton(int button, bool down);
 /// Puts the game's sticks at rest (for when the reader's cursor takes the sticks).
 void RestSticks();

@@ -33,6 +33,7 @@ object Ps2Glue {
     @Composable
     fun Screen(games: List<GameInfo>, onLaunch: (GameInfo) -> Unit, onScan: () -> Unit) {
         val context = LocalContext.current
+        val all = Ps2Home.allGames(context)
         val shown = games.map { game ->
             Ps2Home.Game(
                 key = game.uri.toString(),
@@ -41,7 +42,7 @@ object Ps2Glue {
                 cover = game.coverUrl,
                 readable = game.serial?.let { covers(context, it) } ?: false,
             )
-        }
+        }.filter { all || it.readable }
         val settings = remember(context) { settings(context, onScan) }
         Ps2Home.Screen(
             games = shown,
@@ -85,6 +86,11 @@ object Ps2Glue {
             WindowImpl.showLibrary.value = false
             Main.startBios()
         },
+        // Only the games whose text can be read, unless switched to every game found.
+        Ps2Home.Setting(
+            "shown", "Games Shown",
+            value = { if (Ps2Home.allGames(context)) "All" else "Readable Only" },
+        ) { Ps2Home.setAllGames(context, !Ps2Home.allGames(context)) },
         Ps2Home.Setting("scan", "Look for Games Again") { onScan() },
         Ps2Home.Setting("setup", "Folders and Setup") {
             SetupImpl.resetForReentry()

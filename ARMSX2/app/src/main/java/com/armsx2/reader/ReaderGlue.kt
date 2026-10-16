@@ -60,6 +60,7 @@ object ReaderGlue : ReaderNative.Frontend {
         ReaderNative.frontend = this
         ReaderNative.attachOnce()
         StatsSync.saveSyncService = { ReaderNative.saveSyncService()?.let { it[0] to it[1] } }
+        SaveSync.apply(activity.applicationContext)
         HoverCursor.holdSticks = { held ->
             try {
                 ReaderNative.holdSticks(held)
@@ -72,6 +73,19 @@ object ReaderGlue : ReaderNative.Frontend {
         secondScreen.host = readerHost
         val layer = ReaderOverlay(activity, readerHost, secondary = false)
         layer.gameSurface = this.surface
+        // The app's settings button over the game takes its own touches, Play by touch or not.
+        val origin = IntArray(2)
+        layer.appControlsAt = { x, y ->
+            val area = com.armsx2.ui.touch.TouchControls.settingsButtonArea
+            if (area == null) {
+                false
+            } else {
+                layer.getLocationInWindow(origin)
+                area.contains(x + origin[0], y + origin[1])
+            }
+        }
+        // While a game is played by touch the app's on-screen pad gives way to the reader's buttons.
+        layer.onTouchPlaying = { playing -> com.armsx2.ui.touch.TouchControls.readerTouchPlay.value = playing }
         layer.visibility = View.GONE
         activity.addContentView(
             layer,

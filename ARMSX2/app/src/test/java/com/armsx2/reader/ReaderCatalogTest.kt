@@ -31,7 +31,7 @@ import com.armsx2.reader.ui.ReaderBadge
 @Config(qualifiers = "w768dp-h432dp-400dpi")
 class ReaderCatalogTest {
     private val context: Context get() = ApplicationProvider.getApplicationContext()
-    private val aceAttorney = "SLPM-66302"
+    private val aceAttorney = "SLPM-60001"
     private val unknown = "SLPM-69999"
 
     @Before

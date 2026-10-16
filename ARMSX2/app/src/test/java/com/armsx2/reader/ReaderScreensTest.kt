@@ -301,7 +301,7 @@ class ReaderScreensTest {
         assertEquals(
             listOf(
                 "Statistics", "Game scripts", "Settings", "Looking words up", "Cursor", "Reader panel",
-                "Dictionaries", "Anki and cards", "Statistics options", "Text output", "CRT picture"
+                "Dictionaries", "Anki and cards", "Statistics options", "Save sync", "Text output", "CRT picture"
             ),
             entries(page.preferenceScreen).map { it.title.toString() }
         )
@@ -367,9 +367,9 @@ class ReaderScreensTest {
         }
         assertEquals(
             listOf(
-                ReaderSettings.KEY_SCREEN_TEXT, ReaderSettings.KEY_POPUP_SCALE, ReaderSettings.KEY_POPUP_AUTOHIDE,
-                ReaderSettings.KEY_POPUP_HEIGHT,
-                ReaderSettings.KEY_SCREEN_TEXT_OUTLINE,
+                ReaderSettings.KEY_SCREEN_TEXT, ReaderSettings.KEY_TOUCH_PLAY, ReaderSettings.KEY_POPUP_SCALE, ReaderSettings.KEY_POPUP_AUTOHIDE,
+                ReaderSettings.KEY_POPUP_HEIGHT, ReaderSettings.KEY_CARD_CORNER,
+                ReaderSettings.KEY_WORD_MARK, ReaderSettings.KEY_SCREEN_TEXT_OUTLINE,
                 ReaderSettings.KEY_CURSOR_BUTTON, ReaderSettings.KEY_NEXT_CHOICE_BUTTON, ReaderSettings.KEY_CURSOR_TOGGLE,
                 ReaderSettings.KEY_CURSOR_FRAME,
                 ReaderSettings.KEY_POPUP_HIDE_ON_EXIT, ReaderSettings.KEY_CURSOR_HOME, ReaderSettings.KEY_SECOND_SCREEN, ReaderSettings.KEY_CURSOR_SPEED,
@@ -381,8 +381,9 @@ class ReaderScreensTest {
                 ReaderSettings.KEY_AUDIO_MAX, ReaderSettings.KEY_AUDIO_LEAD, ReaderSettings.KEY_SCREENSHOT_CACHE,
                 ReaderSettings.KEY_SCREENSHOT_WIDTH,
                 ReaderSettings.KEY_SESSION_HUD, ReaderSettings.KEY_STATS_PAUSED, ReaderSettings.KEY_STATS_BUTTON,
-                ReaderSettings.KEY_IDLE_MINUTES, "reader_stats_sync_category", ReaderSettings.KEY_STATS_SERVER, ReaderSettings.KEY_STATS_CODE,
-                ReaderSettings.KEY_STATS_DEVICE,
+                ReaderSettings.KEY_IDLE_MINUTES,
+                SaveSync.KEY_ENABLED, ReaderSettings.KEY_STATS_SERVER, ReaderSettings.KEY_STATS_CODE,
+                ReaderSettings.KEY_STATS_DEVICE, "reader_savesync_status", "reader_savesync_conflicts",
                 ReaderSettings.KEY_HOOK_ENABLED, ReaderSettings.KEY_HOOK_PORT, ReaderSettings.KEY_HOOK_FORMAT,
                 ReaderSettings.KEY_HOOK_SPEAKER, ReaderSettings.KEY_HOOK_LAN, ReaderSettings.KEY_CLIPBOARD_AUTO
             ),

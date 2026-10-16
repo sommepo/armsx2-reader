@@ -60,6 +60,11 @@ import kr.co.iefriends.pcsx2.NativeApp
 import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.math.min
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 
 /** Root entry point. Place this in the same fillMaxSize() container as
  *  the AndroidView surface. Renders nothing when the VM isn't running
@@ -100,7 +105,8 @@ fun TouchControlsOverlay() {
             )
         }
 
-        val showPad = TouchControls.visible.value || edit
+        // Reader fork: not while a game is played by touch; the reader shows its few buttons.
+        val showPad = (TouchControls.visible.value && !TouchControls.readerTouchPlay.value) || edit
         if (!showPad) return@BoxWithConstraints
 
         if (edit) {
@@ -183,22 +189,39 @@ fun TouchControlsOverlay() {
 /*  In-game settings shortcut                                            */
 /* -------------------------------------------------------------------- */
 
+// Reader fork: in the PS2 menu's look (black-indigo glass, a thin light-blue edge, the
+// light-blue cog) and faint until touched, so that it does not stand out over the game; it was a
+// grey disc with a white cog. Its place is told to the reader's layer over the game, which lets
+// touches there through to it (with Play by touch on, that layer took every touch on the picture).
 @Composable
 private fun InGameSettingsButton(modifier: Modifier = Modifier) {
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    DisposableEffect(Unit) {
+        onDispose { TouchControls.settingsButtonArea = null }
+    }
+    val slop = with(LocalDensity.current) { 8.dp.toPx() }
+    val accent = Color(0xFF9CD4FF)
     Box(
         modifier = modifier
-            .size(38.dp)
+            .onGloballyPositioned { placed ->
+                val area = placed.boundsInWindow()
+                TouchControls.settingsButtonArea = android.graphics.RectF(
+                    area.left - slop, area.top - slop, area.right + slop, area.bottom + slop,
+                )
+            }
+            .size(30.dp)
             .clip(CircleShape)
-            .background(Color(0xFF111111).copy(alpha = 0.55f))
-            .border(1.dp, Color.White.copy(alpha = 0.20f), CircleShape)
-            .clickable { InGameOverlay.open() },
+            .background(Color(0xFF060A1E).copy(alpha = if (pressed) 0.80f else 0.38f))
+            .border(1.dp, accent.copy(alpha = if (pressed) 0.70f else 0.22f), CircleShape)
+            .clickable(interactionSource = interaction, indication = null) { InGameOverlay.open() },
         contentAlignment = Alignment.Center,
     ) {
         Icon(
             imageVector = LineAwesomeIcons.CogSolid,
             contentDescription = "Open in-game settings",
-            tint = Color.White.copy(alpha = 0.92f),
-            modifier = Modifier.size(23.dp),
+            tint = accent.copy(alpha = if (pressed) 1f else 0.50f),
+            modifier = Modifier.size(17.dp),
         )
     }
 }

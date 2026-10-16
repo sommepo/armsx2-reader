@@ -47,6 +47,11 @@
             app:summary="@string/reader_section_stats_summary"
             app:iconSpaceReserved="false" />
         <Preference
+            app:key="reader_section_savesync"
+            app:title="@string/reader_pref_category_savesync"
+            app:summary="@string/reader_section_savesync_summary"
+            app:iconSpaceReserved="false" />
+        <Preference
             app:key="reader_section_output"
             app:title="@string/reader_pref_category_output"
             app:summary="@string/reader_section_output_summary"

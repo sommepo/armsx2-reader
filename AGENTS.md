@@ -17,13 +17,15 @@ settings) in the console's colours; the layer over the game's picture with the p
 session line and the cursor; and natively a text engine that loads a game's profile and runs
 it once a frame, with its bridge to the app.
 
-**Fourteen games have a profile**: ひぐらしのなく頃に祭 カケラ遊び (SLPM-66913), Remember11
+**Seventeen games have a profile**: ひぐらしのなく頃に祭 カケラ遊び (SLPM-66913), Remember11
 (SLPM-65550), Ever17 Premium Edition (SLPM-65421), Never7 (SLPS-25256), ペルソナ4
 (SLPM-66978), and since 2026-10-14 ペルソナ3 (SLPM-66445), ドラゴンクエストV (SLPM-65555),
 サイレントヒル2 (SLPM-65051), 真・女神転生III マニアクス (SLPM-65462), DIGITAL DEVIL
 SAGA (SLPM-65597), アマガミ (SLPS-25918), EVE burst error PLUS (SLPM-65320), うたわれるもの
-散りゆく者への子守唄 (SLPS-25679) and シャドウハーツ (SLPS-25041). The two ペルソナ, 真・女神転生III and DIGITAL DEVIL SAGA need a character
-table that is not in Git (see "Ground rules"). The profiles are the desktop sibling's,
+散りゆく者への子守唄 (SLPS-25679), シャドウハーツ (SLPS-25041) and since 2026-10-15 METAL GEAR
+SOLID 2 SUBSTANCE (SLPM-67002), METAL GEAR SOLID 3 SNAKE EATER (SLPM-65790) and CLANNAD
+(SLPM-66302; its routes finished elsewhere can be marked, below). The two ペルソナ,
+真・女神転生III, DIGITAL DEVIL SAGA and the two METAL GEAR SOLIDs need a character table that is not in Git (see "Ground rules"). The profiles are the desktop sibling's,
 where they were written and seen to read the games (its guide's "Games" has what each
 covers; copy a change from there). **In this app ペルソナ4 and Never7 were seen to read** (an
 AYN Thor, 2026-10-13 and 2026-10-14: see "How it was checked"); the others have read nothing
@@ -36,12 +38,12 @@ here yet.
 - **A card's audio**: the mixer's output is handed to the engine's audio history (the same
   lines as in the desktop sibling, where it was seen to hold the game's sound); not run here.
 - **The reader's buttons reach the game too**: its cursor button and statistics button are
-  taken from the keys the activity gets, but pressing a button of the console for the reader
-  (`pressButton`) and holding the game's sticks at rest are not connected to the pads.
+  taken from the keys the activity gets. Pressing a button of the console for the reader
+  (`pressButton`: *Next line*, touch play) reaches the first pad since 2026-10-16 (below);
+  holding the game's sticks at rest (`holdSticks`) is still not connected.
 - **Where the game's picture is** on the surface is worked out from the aspect ratio alone.
 - **The Browser's "Options"** (△, or Y on a controller) is shown and opens nothing yet.
-- **Save sync**: not brought over; the reading statistics can still be sent to a save sync
-  service whose address is typed under the statistics' options.
+- **Save sync** (2026-10-16, below) has not been run on a device.
 
 ## Ground rules
 
@@ -103,15 +105,27 @@ On by default. `Ps2Home.kt` draws the same three screens as the desktop app
 Configuration, the seven lights), the **Browser** (the games as pictures afloat in the haze,
 the chosen one's name and serial in the top right corner, a boxed book on a readable game)
 and **System Configuration** (Reading Statistics, Game Scripts, Dictionaries, Anki,
-Reader Settings, Emulator Settings, Memory Cards, On-screen Controller, Console Menu, Look for Games Again,
-Folders and Setup, Game List). A controller's d-pad, A (enter), B (back) and Y (options), or
+Reader Settings, Emulator Settings, Memory Cards, On-screen Controller, Console Menu, Games
+Shown, Look for Games Again, Folders and Setup, Game List). **The Browser holds only the games
+whose text can be read** unless *Games Shown* is switched to *All* (pref `reader_all_games` in
+`reader`, off at first; 2026-10-16). The games folder is looked through again at every start,
+behind the list kept from the last time (before, a disc copied in later showed only after *Look
+for Games Again*). A controller's d-pad, A (enter), B (back) and Y (options), or
 touch: a touch chooses a game and a second one starts it. *Game List* under System
 Configuration switches the menu off and the app's own library is back.
 
-**The buttons drawn over a game for playing by touch are off** unless *On-screen Controller*
-under System Configuration switches them on (`ui/touch/TouchControls.kt`, an upstream file:
-upstream shows them from the first start and again at every touch of the screen, which here
-is a word looked up).
+**The buttons drawn over a game for playing by touch** (the app's on-screen pad) are on at
+first only on a device without game controls of its own (a phone; the same test as Play by
+touch's, kept from the first start), off on the Thor; *On-screen Controller* under System
+Configuration switches them (`ui/touch/TouchControls.kt`, an upstream file: upstream shows them
+from the first start and again at every touch of the screen, which here is a word looked up).
+**While a game is played by touch the pad is not drawn** (`TouchControls.readerTouchPlay`, set
+through `ReaderOverlay.onTouchPlaying`): that game's few buttons are, below. **The app's cog
+over the game** (the in-game settings, top right) is in the PS2 menu's look, faint until touched
+(2026-10-16; it was a grey disc), and its place is passed to the reader's layer
+(`TouchControls.settingsButtonArea`, `ReaderOverlay.appControlsAt`), which lets touches there
+through: with Play by touch on, that layer took the cog's touch as the game's ○ (on the Fold the
+cog could not be opened).
 
 The reading layer's own screens have the menu's colours and are laid out as its pages: the
 page's name in light blue over a line, the page, and "○ Back" along the bottom.
@@ -122,7 +136,7 @@ The Android SDK and the JDK are the ones the sibling forks use (`tools/reader/en
 
 ```sh
 tools/reader/build-android.sh        # ARMSX2/app/build/outputs/apk/debug/app-debug.apk
-tools/reader/test-android.sh         # the reading layer's tests, off the device (204)
+tools/reader/test-android.sh         # the reading layer's tests, off the device (219)
 READER_PREVIEW_DIR=$PWD/private/previews tools/reader/test-android.sh   # … and pictures of its screens
 ```
 
@@ -168,6 +182,50 @@ names), and links two of them under the names the emulator's build looks for.
 - **Not seen on a device**: the other games reading, anything of ペルソナ4 past its first
   message, a card, the reader's screens opened from System Configuration.
 
+## Playing by touch (2026-10-16)
+
+The maintainer's wish (MAINTAINER.md): a visual novel played by touch alone, without the
+on-screen controller. *Reader settings, Looking words up, Play by touch* (on from the first
+start, `reader_touch_play`), for the games whose script says `-- reader: touch press` (PCSX2
+Reader's guide, "Playing by touch", has the rule and the scripts' side, `reader.cursor`): a tap
+on the game's picture beside any text, or in a message's box beside its words, presses the
+advance button (*Next line*'s, ○ unless changed); a tap on an answer of a choice moves the
+game's cursor there with the d-pad, one press every 250 ms while the script reports where the
+cursor is, then presses ○ (always ○, not the advance button: that may be R1, which skips in
+these games); a finger held on an answer looks its word up; with a popup open a tap only closes
+it; while a choice is up a tap beside it does nothing; two presses that leave the cursor where it
+was get one ○ (a message over the choice), 48 presses at most. **The second display (the
+Thor's trackpad) is never played on**, and the trackpad and the cursor are as they were: touch
+play is only taps on the game's own display. A game whose script says nothing (the role-playing
+and action games) keeps its taps as before. The scripts that say it: Never7, Ever17, Remember11,
+CLANNAD and アマガミ, which also report the cursor; ひぐらしのなく頃に祭 and EVE burst error PLUS,
+where a tap goes on but their choices are not reported, so they also name the few buttons still
+needed (`-- reader: buttons up down circle cross triangle`): `ui/TouchButtons.kt` shows them as a
+column of round buttons at the right edge while Play by touch is on and such a game runs; a
+finger held on one holds the button. **The five that report their cursor name buttons too** (2026-10-16, after the Fold): each title wants START, which a tap's ○ is not, and each has a save and load menu on a button of its own: Never7 and Ever17 `start select up down circle cross`, Remember11 and CLANNAD `start square up down circle cross`, アマガミ `start triangle up down circle cross`; ○ is in every column (and EVE's is `circle cross triangle`) since the maintainer, on the Fold at Never7's LOAD MENU, found × only backs out and no button chooses (a tap on the picture is ○, but did not choose there; not understood yet) (found in PCSX2 Reader's harness; each script's notes say what the others do). **On at first only on a device without game controls of its
+own** (`ReaderSettings.touchPlayAtFirst`: no built-in gamepad, and not an AYN device), so a phone
+(the Fold) has it and the Thor does not (2026-10-16). うたわれるもの was taken out (long battles).
+The Eden Reader fork's touch play (`ui/ScreenTextLayer.kt`, `ui/ReaderOverlay.kt`,
+`ReaderSession.pickAnswer`, `ReaderCatalog.touch`, `ReaderNative.answerCursor` in
+`reader_jni.cpp`, the engine's `reader.cursor`), with the PS2's numbers:
+**`ReaderNative.pressButton` now takes the emulator's own number of a pad input**
+(`PadDualshock2::Inputs`: up 0, right 1, down 2, left 3, ○ 5, ✕ 6, R1 12; `ReaderInput.PAD_*`)
+and `core/emulator.cpp`'s `PressButton` sets the first pad (it was an empty stub, so *Next line*
+pressed nothing). The advance button was kept by the PSP's bit numbers copied from PPSSPP Reader
+(13 ○, 14 ✕, 9 R); such a value is turned into the new one when the settings are first read
+(`ReaderSettings.advanceButton`, `ReaderInput.advanceButtonFromPsp`).
+**Checked**: off the device, `TouchPlayTest` (an answer picked against a made-up game whose
+cursor is on none until the d-pad is pressed, back and sideways, a lesson over the choice, a
+game that takes nothing given up on, the advance button's old numbers, which scripts say touch
+press) and `ScreenTextOverlayTest`'s touch play cases (a tap on the picture and beside the text
+goes on, a word is still looked up, an answer picked and a held one looked up, a tap beside a
+choice or in its box does nothing, a game whose script says nothing keeps its taps); the APK
+builds with it. In PCSX2 Reader on Linux with the same scripts and the same engine: Never7,
+Ever17, Remember11 and CLANNAD picked by this press sequence, and Never7, CLANNAD and アマガミ
+played by clicks (its guide says what was seen). **Not run on a device.**
+
+**Every button, and a tab to tuck them away** (2026-10-16, the maintainer on the Fold: "just add every button like for ppsspp. And add a button on both readers to hide the controller buttons"): while a game is played by touch the column shows **every button of the controller** (`TouchButtons.ALL`: ▲ ▼ ◀ ▶ SELECT L1 L2, △ ○ × □ START R1 R2), in two short columns at the right edge, whatever the script's `-- reader: buttons` line says (the line stays, as a note of what that game needs: a subset chosen from it had left Never7's LOAD MENU with no button that chose). A tab above them (› / ‹) tucks them away and brings them back; the choice is kept (`reader_touch_buttons_tucked`). The same file in the PPSSPP, ARMSX2 and Flycast Reader forks, each with its console's buttons. Checked: JVM tests (`TouchButtonsTest`: every button shown, the tab, kept for the next game) and pictures of the column (`READER_PREVIEW_DIR`, `touch-buttons-all.png`, `touch-buttons-tucked.png`).
+
 ## Going on to the next choice (2026-10-14)
 
 The desktop sibling's (its guide, "Going on to the next choice", has how it works): the game
@@ -197,6 +255,46 @@ wish: only the game is to be seen): `pcsx2/ImGui/ImGuiOverlays.cpp` no longer dr
 statistics, the settings line, the controllers, the pause and speed marks or the shader
 mark, whatever the settings say. Messages (such as the next choice's) and the save state
 selector stay.
+
+## Routes finished elsewhere (2026-10-15)
+
+The desktop sibling's (its guide, "Routes finished elsewhere", has how it works, and "Games"
+CLANNAD's routes): a game's script may offer the game's own progress to be set by hand
+(`reader.progress`, scripts' API 2), and here the in-game menu (the cog) has **Routes** in a
+row of its own below *Next Choice*, shown while such a game runs, with how many are marked.
+It opens a list with a box for each (`reader/Routes.kt`; the group in front of each row, the
+script's note under *How the game keeps them*); a box changed is written into the game's
+memory by the script at once, and every box then shows the game's state. `reader_jni.cpp`
+(`progress`, `markProgress`), `ReaderNative.kt` and the upstream `ui/InGameOverlay.kt` tie it
+in. The engine's change is the sibling's (`Engine::Progress`, `MarkProgress`; a script writes
+memory only while marking). **Not run on a device**: built and the off-device tests passed;
+the desktop app did the same marking with CLANNAD (its guide says what was seen). This app
+has no card of a game's own: CLANNAD saves on the card in the first slot, which it does not
+format itself, so that card must already be formatted (by another game, or the console's
+menu).
+
+## Save sync (2026-10-16)
+
+PCSX2 Reader's (its guide, "Save sync"), so the two keep one game's saves together: while a game
+runs, the first memory card slot holds **a card of that game's own**,
+`memcards/reader-saves/<serial>/card.ps2` (made formatted), whatever card the settings name;
+its newest save is fetched from the service before the emulator opens the card and sent a
+moment after the game writes it. Saves on the settings' own card (`Mcd001.ps2`) are not carried
+over. `cpp/reader/save_sync/` and `cpp/reader/ext/` are PCSX2 Reader's files copied unchanged
+(change them there and copy); the card's part is in `reader/core/emulator.cpp`
+(`BeforeMemoryCards`, `MemoryCardOverride`, `OnMemoryCardWritten`, `ConfigureSaveSync`, the
+last keeping the app's settings until the emulator has read its folders), tied in at the same
+places as there (`pcsx2/VMManager.cpp`, `Pcsx2Config.cpp`, `SIO/Memcard/MemoryCardFile.cpp`,
+`MemoryCardFolder.cpp`). The page is *Reader settings, Save sync* (`reader/SaveSync.kt`, the
+page's code in `ReaderSettingsActivity`): *Sync game saves*, the service's address and code
+and the device's name (the same settings the statistics used before, so they are sent there
+too), *Sync now* with what the service last said, and a game whose save changed on two devices
+with the choice of which to keep. A published build (`-PreaderSaveSync=false`, which passes
+`READER_SAVE_SYNC=OFF` to CMake) has none of it.
+**Checked**: the off-device tests (`SaveSyncTest`, the page's keys in `ReaderScreensTest`); the
+APK carries the native side; the same engine, compiled on this machine with a small program,
+fetched the newest Never7 card from a copy of the real service's data served on a loopback
+port, byte for byte. **Not run on a device.**
 
 ## Game scripts (2026-10-14)
 
@@ -257,3 +355,13 @@ the first text, a stroke on it moved the cursor on the game, the cursor on 選�
 entry, the console's pointer showed under the finger. **Not tried on a device**: a real
 controller's d-pad and sticks while the pad is up (the fault this mends, covered by the test
 only), and the other three apps.
+
+## A game's menu, picked by a tap (2026-10-16)
+
+A script may report a menu on the channel `menu` (`TextLine.CHANNEL_MENU`): the screen layer
+treats it as a choice (a tap on an entry picks it, by the cursor the script reports), but
+`ReaderSession` only places it on the screen: no statistics, no backlog, not in the panel, not
+on the clipboard. EVE burst error PLUS reports its command menus so (PCSX2 Reader's guide has
+where they are). Its buttons are now × and △. Tried in PCSX2 Reader on Linux; JVM test of the
+line model (`TouchPlayTest`); not on a device. Looked for and not done (2026-10-16): ひぐらし's
+story choices (none met in its opening); the other apps' games are in their own notes.

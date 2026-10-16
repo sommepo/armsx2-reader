@@ -843,6 +843,9 @@ class Main: ComponentActivity() {
         invoke {
             NativeApp.initializeOnce(applicationContext)
             nativeReady.value = true
+            // Reader fork: save sync's settings handed over now that the native side is loaded
+            // (the reading layer attaches earlier, when the library may not be there yet).
+            com.armsx2.reader.SaveSync.apply(applicationContext)
 
             // Pin Filenames/BIOS to the file the setup wizard copied —
             // deferred to here because Host::SetBaseStringSettingValue

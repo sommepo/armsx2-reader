@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import compose.icons.LineAwesomeIcons
 import compose.icons.lineawesomeicons.FastForwardSolid
+import compose.icons.lineawesomeicons.CheckSquareSolid
 import compose.icons.lineawesomeicons.CompactDiscSolid
 import compose.icons.lineawesomeicons.CubeSolid
 import compose.icons.lineawesomeicons.EyeSlashSolid
@@ -1160,6 +1161,26 @@ object InGameOverlay {
                     }
                 } else {
                     Spacer(Modifier.weight(1f))
+                }
+            }
+            // Reader fork: routes finished in another copy of the game, marked by hand, when the
+            // game's script offers them (com.armsx2.reader.Routes; CLANNAD's). The game stays
+            // paused while the list is up.
+            if (com.armsx2.reader.ReaderSession.isActive) {
+                val routes = remember { com.armsx2.reader.Routes.offer() }
+                if (routes != null) {
+                    val context = LocalContext.current
+                    BubbleRow {
+                        BubbleButton(
+                            "Routes",
+                            LineAwesomeIcons.CheckSquareSolid,
+                            stateLine = "${routes.items.count { it.done }}/${routes.items.size}",
+                            modifier = Modifier.weight(1f),
+                        ) {
+                            com.armsx2.reader.Routes.show(context)
+                        }
+                        Spacer(Modifier.weight(3f))
+                    }
                 }
             }
         }

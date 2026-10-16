@@ -4,6 +4,7 @@
 // The reader's bridge to its Kotlin layer (org.ppsspp.ppsspp.reader.ReaderNative).
 
 #include <condition_variable>
+#include <cstdio>
 #include <deque>
 #include <functional>
 #include <jni.h>
@@ -23,11 +24,61 @@
 #include "reader/core/engine.h"
 #include "reader/core/input_filter.h"
 #include "reader/core/crt_jni.h"
+#include "reader/save_sync/host.h"
 
 // The Java runtime, kept when the Kotlin side attaches.
 static JavaVM *gJvm = nullptr;
 
 namespace ReaderJni {
+
+/// A Java byte array as a string of its bytes (UTF-8 from the Kotlin side).
+std::string Bytes(JNIEnv *env, jbyteArray bytes) {
+	if (bytes == nullptr) {
+		return {};
+	}
+	const jsize length = env->GetArrayLength(bytes);
+	std::string out(static_cast<size_t>(length), '\0');
+	env->GetByteArrayRegion(bytes, 0, length, reinterpret_cast<jbyte *>(out.data()));
+	return out;
+}
+
+/// A Java string from UTF-8, through a byte array (NewStringUTF wants modified UTF-8).
+jstring Utf8String(JNIEnv *env, const std::string &text) {
+	jbyteArray bytes = env->NewByteArray(static_cast<jsize>(text.size()));
+	env->SetByteArrayRegion(bytes, 0, static_cast<jsize>(text.size()), reinterpret_cast<const jbyte *>(text.data()));
+	jclass string_class = env->FindClass("java/lang/String");
+	jmethodID make = env->GetMethodID(string_class, "<init>", "([BLjava/lang/String;)V");
+	jstring charset = env->NewStringUTF("UTF-8");
+	auto *out = static_cast<jstring>(env->NewObject(string_class, make, bytes, charset));
+	env->DeleteLocalRef(bytes);
+	env->DeleteLocalRef(charset);
+	env->DeleteLocalRef(string_class);
+	return out;
+}
+
+/// A string as a JSON string, quotes and all.
+std::string Quote(const std::string &text) {
+	std::string out = "\"";
+	for (const char c : text) {
+		switch (c) {
+		case '"': out += "\\\""; break;
+		case '\\': out += "\\\\"; break;
+		case '\n': out += "\\n"; break;
+		case '\r': out += "\\r"; break;
+		case '\t': out += "\\t"; break;
+		default:
+			if (static_cast<unsigned char>(c) < 0x20) {
+				char escaped[8];
+				std::snprintf(escaped, sizeof(escaped), "\\u%04x", c);
+				out += escaped;
+			} else {
+				out += c;
+			}
+		}
+	}
+	return out + "\"";
+}
+
 namespace {
 
 jclass s_bridge_class;
@@ -365,6 +416,20 @@ JNIEXPORT void JNICALL Java_com_armsx2_reader_ReaderNative_pressButton(JNIEnv *,
 	Reader::Emu::PressButton(button, down != JNI_FALSE);
 }
 
+// Which answer of the choice on screen the game's cursor is on, as the profile reports it
+// (reader.cursor): {index (-1 for none yet), 1 when the answers are side by side}, or null when
+// it says nothing. Touch play turns a tap on an answer into d-pad presses with it.
+JNIEXPORT jintArray JNICALL Java_com_armsx2_reader_ReaderNative_answerCursor(JNIEnv *env, jobject) {
+	const auto cursor = Reader::Engine::Instance().Cursor();
+	if (!cursor)
+		return nullptr;
+	const jint values[2]{cursor->index, cursor->horizontal ? 1 : 0};
+	const jintArray array = env->NewIntArray(2);
+	if (array)
+		env->SetIntArrayRegion(array, 0, 2, values);
+	return array;
+}
+
 JNIEXPORT void JNICALL Java_com_armsx2_reader_ReaderNative_toggleNextChoice(JNIEnv *, jobject) {
 	Reader::Emu::ToggleNextChoice();
 }
@@ -373,14 +438,134 @@ JNIEXPORT jboolean JNICALL Java_com_armsx2_reader_ReaderNative_goingToNextChoice
 	return Reader::Emu::GoingToNextChoice() ? JNI_TRUE : JNI_FALSE;
 }
 
+// What the game's script offers to mark by hand (reader.progress), as JSON: {"title","note",
+// "items":[{"id","label","group","done"}]}, or null when it offers nothing.
+JNIEXPORT jstring JNICALL Java_com_armsx2_reader_ReaderNative_progress(JNIEnv *env, jobject) {
+	const auto list = Reader::Engine::Instance().Progress();
+	if (!list || list->items.empty()) {
+		return nullptr;
+	}
+	const auto quote = [](const std::string &text) {
+		std::string out = "\"";
+		for (const char c : text) {
+			switch (c) {
+			case '"': out += "\\\""; break;
+			case '\\': out += "\\\\"; break;
+			case '\n': out += "\\n"; break;
+			default:
+				if (static_cast<unsigned char>(c) < 0x20) {
+					out += ' ';
+				} else {
+					out += c;
+				}
+			}
+		}
+		return out + "\"";
+	};
+	std::string json = "{\"title\":" + quote(list->title) + ",\"note\":" + quote(list->note) + ",\"items\":[";
+	for (std::size_t i = 0; i < list->items.size(); ++i) {
+		const auto &item = list->items[i];
+		json += (i ? "," : "") + std::string("{\"id\":") + quote(item.id) + ",\"label\":" + quote(item.label) +
+				",\"group\":" + quote(item.group) + ",\"done\":" + (item.done ? "true" : "false") + "}";
+	}
+	json += "]}";
+	return env->NewStringUTF(json.c_str());
+}
+
+// Marks one; null when done, else what went wrong.
+JNIEXPORT jstring JNICALL Java_com_armsx2_reader_ReaderNative_markProgress(JNIEnv *env, jobject, jstring id, jboolean done) {
+	const char *chars = env->GetStringUTFChars(id, nullptr);
+	const std::string name = chars ? chars : "";
+	if (chars) {
+		env->ReleaseStringUTFChars(id, chars);
+	}
+	std::string error;
+	if (Reader::Engine::Instance().MarkProgress(name, done != JNI_FALSE, error)) {
+		return nullptr;
+	}
+	return env->NewStringUTF(error.c_str());
+}
+
 JNIEXPORT jboolean JNICALL Java_com_armsx2_reader_ReaderNative_inGame(JNIEnv *, jobject) {
 	return VMManager::GetState() == VMState::Running ? JNI_TRUE : JNI_FALSE;
 }
 
-JNIEXPORT jobjectArray JNICALL Java_com_armsx2_reader_ReaderNative_saveSyncService(JNIEnv *, jobject) {
-	// This app syncs no saves: there is no service to send the reading statistics to either,
-	// unless one is typed under the statistics' options.
+JNIEXPORT jobjectArray JNICALL Java_com_armsx2_reader_ReaderNative_saveSyncService(JNIEnv *env, jobject) {
+	// The reading statistics go to the save sync service while save sync is on.
+#ifdef READER_NO_SAVE_SYNC
 	return nullptr;
+#else
+	if (!SaveSync::Host::Started()) {
+		return nullptr;
+	}
+	const SaveSync::Host::Settings settings = SaveSync::Host::Get();
+	if (!settings.enabled || settings.addresses.empty() || settings.code.empty()) {
+		return nullptr;
+	}
+	jobjectArray out = env->NewObjectArray(2, env->FindClass("java/lang/String"), nullptr);
+	env->SetObjectArrayElement(out, 0, ReaderJni::Utf8String(env, settings.addresses));
+	env->SetObjectArrayElement(out, 1, ReaderJni::Utf8String(env, settings.code));
+	return out;
+#endif
+}
+
+// ---- Save sync (reader/save_sync, the page in reader/SaveSync.kt) ----
+// Text goes both ways as UTF-8 bytes; what the page shows comes as one JSON object.
+
+JNIEXPORT void JNICALL Java_com_armsx2_reader_ReaderNative_saveSyncConfigure(JNIEnv *env, jobject,
+		jboolean enabled, jbyteArray addresses, jbyteArray code, jbyteArray device) {
+#ifndef READER_NO_SAVE_SYNC
+	SaveSync::Host::Settings settings;
+	settings.enabled = enabled != JNI_FALSE;
+	settings.addresses = ReaderJni::Bytes(env, addresses);
+	settings.code = ReaderJni::Bytes(env, code);
+	settings.device = ReaderJni::Bytes(env, device);
+	Reader::Emu::ConfigureSaveSync(settings);
+#endif
+}
+
+JNIEXPORT jbyteArray JNICALL Java_com_armsx2_reader_ReaderNative_saveSyncState(JNIEnv *env, jobject) {
+	std::string json = "{";
+#ifndef READER_NO_SAVE_SYNC
+	if (SaveSync::Host::Started()) {
+		const SaveSync::Host::Settings settings = SaveSync::Host::Get();
+		json += "\"on\":" + std::string(settings.enabled ? "true" : "false");
+		json += ",\"generation\":" + std::to_string(SaveSync::Host::Generation());
+		json += ",\"status\":" + ReaderJni::Quote(SaveSync::Host::Status());
+		json += ",\"running\":" + ReaderJni::Quote(SaveSync::Host::RunningDisc());
+		json += ",\"conflicts\":[";
+		bool first = true;
+		for (const SaveSync::Host::Conflict &conflict : SaveSync::Host::Conflicts()) {
+			json += first ? "" : ",";
+			first = false;
+			json += "{\"title\":" + ReaderJni::Quote(conflict.title) + ",\"disc\":" + ReaderJni::Quote(conflict.disc) +
+				",\"name\":" + ReaderJni::Quote(conflict.name) + ",\"message\":" + ReaderJni::Quote(conflict.message) + "}";
+		}
+		json += "]";
+	}
+#endif
+	json += "}";
+	jbyteArray out = env->NewByteArray(static_cast<jsize>(json.size()));
+	env->SetByteArrayRegion(out, 0, static_cast<jsize>(json.size()), reinterpret_cast<const jbyte *>(json.data()));
+	return out;
+}
+
+JNIEXPORT void JNICALL Java_com_armsx2_reader_ReaderNative_saveSyncCheck(JNIEnv *, jobject) {
+#ifndef READER_NO_SAVE_SYNC
+	if (SaveSync::Host::Started()) {
+		SaveSync::Host::Check();
+		SaveSync::Host::SyncAll();
+	}
+#endif
+}
+
+JNIEXPORT void JNICALL Java_com_armsx2_reader_ReaderNative_saveSyncResolve(JNIEnv *env, jobject,
+		jbyteArray title, jboolean keepMine) {
+#ifndef READER_NO_SAVE_SYNC
+	if (SaveSync::Host::Started()) {
+		SaveSync::Host::Resolve(ReaderJni::Bytes(env, title), keepMine != JNI_FALSE);
+	}
+#endif
 }
 
 } // extern "C"

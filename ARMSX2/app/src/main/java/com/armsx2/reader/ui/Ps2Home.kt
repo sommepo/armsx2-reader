@@ -137,6 +137,23 @@ object Ps2Home {
     /** Follows [setWanted], for the screen that chooses between this menu and the library. */
     val wantedState = mutableStateOf<Boolean?>(null)
 
+    private const val KEY_ALL_GAMES = "reader_all_games"
+
+    /**
+     * The Browser shows every game found, not only those whose text can be read (off unless
+     * switched on under System Configuration, "Games Shown").
+     */
+    fun allGames(context: Context): Boolean =
+        allGamesState.value ?: context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getBoolean(KEY_ALL_GAMES, false).also { allGamesState.value = it }
+
+    fun setAllGames(context: Context, all: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_ALL_GAMES, all).apply()
+        allGamesState.value = all
+    }
+
+    private val allGamesState = mutableStateOf<Boolean?>(null)
+
     // What is up and what is chosen outlives a game: back from one, the Browser is where it was.
     private var screen by mutableStateOf(Screen.Menu)
     private var menuChoice by mutableIntStateOf(0)

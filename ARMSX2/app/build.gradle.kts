@@ -18,6 +18,10 @@ android {
         // to a save sync service.
         buildConfigField("boolean", "READER_SAVE_SYNC",
             (providers.gradleProperty("readerSaveSync").orNull != "false").toString())
+        // The same for the native side: no save sync, each game on the settings' memory cards.
+        if (providers.gradleProperty("readerSaveSync").orNull == "false") {
+            externalNativeBuild { cmake { arguments += "-DREADER_SAVE_SYNC=OFF" } }
+        }
         minSdk = 26
         targetSdk = 36
         versionCode = 15

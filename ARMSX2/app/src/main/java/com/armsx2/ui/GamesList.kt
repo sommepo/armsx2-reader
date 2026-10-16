@@ -121,7 +121,10 @@ object GamesList {
                 if (cachedKey == romsKey) {
                     games.clear()
                     games.addAll(cachedGames)
-                    lastScannedRoms.value = romsKey
+                    // Reader fork: the cached list is shown at once and the folder is looked
+                    // through again behind it, so a disc copied in since shows without
+                    // "Look for Games Again".
+                    if (!scanning.value) scanRoms(context, romsDirs, romsKey)
                     return@LaunchedEffect
                 }
             }

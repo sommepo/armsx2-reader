@@ -3,6 +3,7 @@
 
 #include "common/CocoaTools.h"
 #include "common/FileSystem.h"
+#include "reader/core/emulator.h" // Reader fork
 #include "common/Path.h"
 #include "common/SettingsInterface.h"
 #include "common/SettingsWrapper.h"
@@ -2130,6 +2131,13 @@ std::string Pcsx2Config::FullpathToBios() const
 
 std::string Pcsx2Config::FullpathToMcd(uint slot) const
 {
+	// Reader fork: while a game runs, the first slot holds that game's own card (save sync).
+	if (slot == 0)
+	{
+		std::string own = Reader::Emu::MemoryCardOverride();
+		if (!own.empty())
+			return own;
+	}
 	return Path::Combine(EmuFolders::MemoryCards, Mcd[slot].Filename);
 }
 

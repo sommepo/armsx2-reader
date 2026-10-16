@@ -1198,6 +1198,9 @@ void VMManager::UpdateDiscDetails(bool booting)
 		Achievements::GameChanged(s_disc_crc, s_current_crc);
 		ReloadPINE();
 		UpdateDiscordPresence(s_state.load(std::memory_order_relaxed) == VMState::Initializing);
+		// Reader fork: the game's own memory card goes into the first slot, its newest save
+		// fetched first (save sync).
+		Reader::Emu::BeforeMemoryCards(s_disc_serial, GetTitle(false));
 		FileMcd_Reopen(memcardFilters.empty() ? s_disc_serial : memcardFilters);
 	}
 }

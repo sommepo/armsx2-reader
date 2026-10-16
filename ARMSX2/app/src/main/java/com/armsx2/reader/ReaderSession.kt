@@ -66,6 +66,15 @@ object ReaderSession {
     }
 
     private const val DUPLICATE_WINDOW_MS = 1500L
+
+    /**
+     * How long a button is held for the game (a PS2 game reads its pad once a frame: five or
+     * more frames), and how long a step of picking an answer takes (the press, the game moving
+     * its cursor, the profile reporting where it is now).
+     */
+    private const val PRESS_MS = 100L
+    private const val PICK_STEP_MS = 250L
+    private const val MAX_PICK_PRESSES = 48
     private const val HEARTBEAT_MS = 1000L
     private const val FLUSH_INTERVAL_MS = 15_000L
 
@@ -334,21 +343,102 @@ object ReaderSession {
         worker?.execute { tracker?.onInteraction(now) }
     }
 
-    /** Presses and releases the configured advance button in the game. Main thread. */
-    fun pressAdvance() {
-        val button = settings?.advanceButton ?: ReaderInput.PSP_CIRCLE
+    /** Holds (true) or lets go of (false) one button of the console, by its number: the
+     *  buttons a game played by touch still needs (ui/TouchButtons). Main thread. */
+    fun holdButton(code: Int, down: Boolean) {
         try {
-            ReaderNative.pressButton(button, true)
-            main.postDelayed({
-                try {
-                    ReaderNative.pressButton(button, false)
-                } catch (_: UnsatisfiedLinkError) {
-                }
-            }, 80)
+            ReaderNative.pressButton(code, down)
         } catch (_: UnsatisfiedLinkError) {
             // No emulator behind this (off-device tests).
         }
+        if (down) noteInteraction()
+    }
+
+    /** Presses and releases the configured advance button in the game. Main thread. */
+    fun pressAdvance() {
+        press(settings?.advanceButton ?: ReaderInput.PAD_CIRCLE)
         noteInteraction()
+    }
+
+    /** The game's controller: an input pressed or released. Tests put a game of their own here. */
+    internal var padInput: (input: Int, down: Boolean) -> Unit = { input, down ->
+        try {
+            ReaderNative.pressButton(input, down)
+        } catch (_: UnsatisfiedLinkError) {
+            // No emulator behind this (off-device tests).
+        }
+    }
+
+    /** Where the game's cursor is on a choice's answers (ReaderNative.answerCursor). Tests, too. */
+    internal var answerCursor: () -> IntArray? = {
+        try {
+            ReaderNative.answerCursor()
+        } catch (_: UnsatisfiedLinkError) {
+            null
+        }
+    }
+
+    /** Presses and releases one input of the first controller ([ReaderInput.PAD_CIRCLE]...). */
+    private fun press(input: Int) {
+        padInput(input, true)
+        main.postDelayed({ padInput(input, false) }, PRESS_MS)
+    }
+
+    private var picking: Runnable? = null
+
+    /**
+     * Picks answer [answer] (from 0) of the choice on screen as a player would with the
+     * controller: moves the game's cursor there with the d-pad, one press at a time while the
+     * profile reports where it is (reader.cursor), then presses ○. False, and nothing pressed,
+     * when the profile does not say where the cursor is. ○ and not the advance button confirms:
+     * the latter may be R1, which skips in these games. Main thread.
+     */
+    fun pickAnswer(answer: Int): Boolean {
+        if (answerCursor() == null) return false
+        picking?.let { main.removeCallbacks(it) }
+        var presses = 0
+        var last = Int.MIN_VALUE
+        var stuck = 0
+        val step = object : Runnable {
+            override fun run() {
+                val cursor = answerCursor()
+                if (cursor == null || presses >= MAX_PICK_PRESSES) {
+                    picking = null
+                    return
+                }
+                val at = cursor[0]
+                val sideways = cursor[1] == 1
+                if (at == answer) {
+                    picking = null
+                    press(ReaderInput.PAD_CIRCLE)
+                    return
+                }
+                // A press that leaves the cursor where it was, twice: something else has the input
+                // (a game's lesson or message over the choice wants ○ first). ○ once, then on.
+                stuck = if (at == last) stuck + 1 else 0
+                last = at
+                if (stuck >= 2) {
+                    stuck = 0
+                    last = Int.MIN_VALUE
+                    press(ReaderInput.PAD_CIRCLE)
+                    presses++
+                    main.postDelayed(this, PICK_STEP_MS)
+                    return
+                }
+                press(
+                    when {
+                        at < answer -> if (sideways) ReaderInput.PAD_RIGHT else ReaderInput.PAD_DOWN
+                        else -> if (sideways) ReaderInput.PAD_LEFT else ReaderInput.PAD_UP
+                    }
+                )
+                presses++
+                main.postDelayed(this, PICK_STEP_MS)
+            }
+        }
+        picking = step
+        step.run()
+        noteInteraction()
+        return true
     }
 
     /** Forgets the tracker's open session after sessions were deleted or cleared. */
@@ -410,6 +500,12 @@ object ReaderSession {
     // ---- Worker thread ----
 
     private fun handleLine(line: TextLine, now: Long) {
+        if (line.isMenu) {
+            // Not read: only placed on the screen, for a tap to pick an entry.
+            val presented = PresentedLine(line, LineAccounting(0, reread = true, counted = false, sessionId = null), -1L)
+            main.post { if (isActive && line.window.isNotEmpty()) adoptWindowLine(presented) }
+            return
+        }
         val db = database ?: return
         val activity = tracker ?: return
         val previous = lastLine

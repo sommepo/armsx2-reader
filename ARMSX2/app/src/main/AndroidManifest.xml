@@ -24,7 +24,9 @@
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
 
-    <!-- Reader fork: AnkiDroid, for cards. -->
+    <!-- Reader fork: AnkiDroid, for cards: its content provider adds them only for an app that
+         holds this permission (the user grants it when Anki is set up). -->
+    <uses-permission android:name="com.ichi2.anki.permission.READ_WRITE_DATABASE" />
     <queries>
         <package android:name="com.ichi2.anki" />
         <provider android:authorities="com.ichi2.anki.flashcards" />

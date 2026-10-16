@@ -44,6 +44,15 @@ object TouchControls {
      *  the controls. */
     val visible = mutableStateOf(false) // Reader fork: was true; see [wanted]
 
+    /** Reader fork: a game is being played by touch (Play by touch on, its script says how):
+     *  the pad is not drawn, the reader's few buttons for that game are. Set by the reader. */
+    val readerTouchPlay = mutableStateOf(false)
+
+    /** Reader fork: where the in-game settings button is, in window pixels, while it is shown:
+     *  the reader's layer over the game lets touches there through to it. */
+    @Volatile
+    var settingsButtonArea: android.graphics.RectF? = null
+
     /** Edit mode — buttons are draggable + resizable, JNI pad writes are
      *  suppressed. Toggled from InGameOverlay's "Edit Touch Controls"
      *  row. */
@@ -106,7 +115,14 @@ object TouchControls {
         val match = list.firstOrNull { it.name == active } ?: list.first()
         activeLayout.value = match.layout.copy()
         opacity.value = Main.prefs.getFloat(KEY_OPACITY, 0.55f).coerceIn(0.20f, 1.0f)
-        wanted.value = Main.prefs.getBoolean(KEY_WANTED, false) // Reader fork
+        // Reader fork: on at first only on a device without game controls of its own (a phone),
+        // as Play by touch is; the first choice is kept so that it does not change with a
+        // controller plugged in later.
+        if (!Main.prefs.contains(KEY_WANTED)) {
+            val first = com.armsx2.reader.ReaderSettings.touchPlayAtFirst()
+            runCatching { Main.prefs.edit().putBoolean(KEY_WANTED, first).apply() }
+        }
+        wanted.value = Main.prefs.getBoolean(KEY_WANTED, false)
         visible.value = wanted.value
     }
 

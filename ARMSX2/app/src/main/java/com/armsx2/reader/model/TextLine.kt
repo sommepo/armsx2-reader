@@ -32,7 +32,14 @@ data class TextLine(
     val timestamp: Long,
     val window: String = ""
 ) {
-    val isChoice: Boolean get() = channel == CHANNEL_CHOICE
+    /** A choice's answers, or a game's menu: what a tap picks from when playing by touch. */
+    val isChoice: Boolean get() = channel == CHANNEL_CHOICE || channel == CHANNEL_MENU
+
+    /**
+     * A game's menu (EVE's commands): its entries can be picked by a tap like a choice's answers,
+     * but it is not read, so it stays out of the statistics, the backlog and the panel.
+     */
+    val isMenu: Boolean get() = channel == CHANNEL_MENU
 
     /** Text with readings in Anki's furigana syntax: " 漢字[かんじ]". */
     fun toAnkiFurigana(): String = buildString {
@@ -92,6 +99,7 @@ data class TextLine(
     companion object {
         const val CHANNEL_DIALOGUE = "dialogue"
         const val CHANNEL_CHOICE = "choice"
+        const val CHANNEL_MENU = "menu"
 
         /** Parses the engine's event JSON. Returns null when the text is missing or empty. */
         fun fromJson(json: String, timestamp: Long): TextLine? {

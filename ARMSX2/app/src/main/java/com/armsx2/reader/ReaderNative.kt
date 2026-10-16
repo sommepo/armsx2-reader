@@ -47,8 +47,24 @@ object ReaderNative {
      */
     external fun saveSyncService(): Array<String>?
 
-    /** Presses or releases a button of the PSP, by the number of its bit in the button word. */
-    external fun pressButton(bit: Int, down: Boolean)
+    // Save sync (SaveSync.kt): text as UTF-8 bytes, the state as a JSON object.
+    external fun saveSyncConfigure(enabled: Boolean, addresses: ByteArray, code: ByteArray, device: ByteArray)
+    external fun saveSyncState(): ByteArray
+    external fun saveSyncCheck()
+    external fun saveSyncResolve(title: ByteArray, keepMine: Boolean)
+
+    /**
+     * Presses or releases an input of the first controller, by the emulator's own number of it
+     * (PadDualshock2::Inputs: [ReaderInput.PAD_UP] 0 ... [ReaderInput.PAD_START] 9).
+     */
+    external fun pressButton(input: Int, down: Boolean)
+
+    /**
+     * Which answer of the choice on screen the game's cursor is on, as the profile reports it
+     * (reader.cursor): the answer (from 0; -1 while on none yet) and 1 when the answers are side
+     * by side. Null when the profile says nothing about it.
+     */
+    external fun answerCursor(): IntArray?
 
     /** True while the game itself is in front: not the emulator's menus, not its pause screen. */
     external fun inGame(): Boolean
@@ -60,6 +76,12 @@ object ReaderNative {
     external fun toggleNextChoice()
 
     external fun goingToNextChoice(): Boolean
+
+    /** What the game's script offers to mark by hand (its routes), as JSON, or null ([Routes]). */
+    external fun progress(): String?
+
+    /** Marks one item of [progress]; null when done, else what went wrong. */
+    external fun markProgress(id: String, done: Boolean): String?
 
     internal const val PROFILE_ASSET_DIR = "reader/profiles"
     internal const val PROFILE_USER_DIR = "reader/profiles"

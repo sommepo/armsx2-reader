@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reader settings, the page "Save sync": each game's memory card kept the same as on the
+     user's save sync service (PCSX2 Reader's, Eden Reader's service), and the reading
+     statistics sent there. reader/SaveSync.kt and the page's code in ReaderSettingsActivity. -->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SwitchPreferenceCompat
+        app:key="reader_savesync"
+        app:defaultValue="true"
+        app:title="@string/reader_pref_savesync"
+        app:summary="@string/reader_pref_savesync_summary"
+        app:iconSpaceReserved="false" />
+    <EditTextPreference
+        app:key="reader_stats_server"
+        app:defaultValue=""
+        app:title="@string/reader_pref_stats_server"
+        app:summary="@string/reader_pref_stats_server_summary"
+        app:iconSpaceReserved="false" />
+    <EditTextPreference
+        app:key="reader_stats_code"
+        app:defaultValue=""
+        app:title="@string/reader_pref_stats_code"
+        app:iconSpaceReserved="false" />
+    <EditTextPreference
+        app:key="reader_stats_device"
+        app:defaultValue=""
+        app:title="@string/reader_pref_stats_device"
+        app:iconSpaceReserved="false" />
+    <Preference
+        app:key="reader_savesync_status"
+        app:title="@string/reader_pref_savesync_now"
+        app:iconSpaceReserved="false" />
+    <PreferenceCategory
+        app:key="reader_savesync_conflicts"
+        app:title="@string/reader_pref_savesync_conflicts"
+        app:isPreferenceVisible="false"
+        app:iconSpaceReserved="false" />
+</PreferenceScreen>

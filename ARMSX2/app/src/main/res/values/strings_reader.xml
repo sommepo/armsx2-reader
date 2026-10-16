@@ -187,6 +187,9 @@
     <string name="reader_pref_popup_hide_on_exit_summary">When the cursor is off the word and off the popup</string>
     <string name="reader_pref_popup_height">Popup height limit (% of the screen)</string>
     <string name="reader_pref_screen_text_outline">Outline what can be tapped</string>
+    <string name="reader_pref_touch_play">Play by touch</string>
+    <string name="reader_pref_touch_play_summary">Visual novels: a tap beside the text goes on, a tap on an answer picks it, a held finger looks it up</string>
+    <string name="reader_touch_pick_unknown">This game\'s answers are picked with the controller: its script does not say where the cursor is</string>
     <string name="reader_pref_category_cursor">Cursor</string>
     <string name="reader_pref_cursor_button">Cursor button</string>
     <string name="reader_pref_next_choice_button">Button that goes on to the next choice</string>
@@ -302,13 +305,13 @@
     <string-array name="reader_advance_button_entries">
         <item>Circle</item>
         <item>Cross</item>
-        <item>R</item>
+        <item>R1</item>
     </string-array>
-    <!-- The bit of the button in the PSP's button word. -->
+    <!-- The emulator's number of the controller's input (PadDualshock2::Inputs). -->
     <string-array name="reader_advance_button_values" translatable="false">
-        <item>13</item>
-        <item>14</item>
-        <item>9</item>
+        <item>5</item>
+        <item>6</item>
+        <item>12</item>
     </string-array>
 
     <!-- Save sync -->
@@ -345,11 +348,43 @@
     <string name="reader_savesync_fetched">Save sync: took the save of %1$s made on %2$s (%3$s).</string>
     <string name="reader_savesync_several_later">Save sync: %1$d games have another save on the service. You are asked which to keep when each is started.</string>
     <string name="reader_savesync_starts_anyway">The game starts with this device\'s save.</string>
-    <string name="reader_pref_stats_sync">Send to the save sync service</string>
     <string name="reader_pref_stats_server">Address of the service</string>
-    <string name="reader_pref_stats_server_summary">Eden Reader\'s save sync service, for example 192.168.1.50:8642. Empty: nothing is sent</string>
+    <string name="reader_pref_stats_server_summary">The save sync service, for example 192.168.1.50:8642 or a Tailscale name with :8642</string>
+    <string name="reader_pref_category_savesync">Save sync</string>
+    <string name="reader_section_savesync_summary">Each game\'s save the same as on your other devices, and statistics</string>
+    <string name="reader_pref_savesync">Sync game saves</string>
+    <string name="reader_pref_savesync_summary">Each game has a memory card of its own, fetched before it starts and sent after it saves</string>
+    <string name="reader_pref_savesync_now">Sync now</string>
+    <string name="reader_pref_savesync_off">Off: switched off, or the address or the code is missing</string>
+    <string name="reader_pref_savesync_conflicts">Saves changed on two devices</string>
+    <string name="reader_savesync_keep_mine">Keep this device\'s</string>
+    <string name="reader_savesync_take_theirs">Take the other device\'s</string>
     <string name="reader_pref_stats_code">Code of the service</string>
     <string name="reader_pref_stats_device">This device\'s name</string>
     <!-- Along the bottom of the pages, as on the System Configuration of the console. -->
     <string name="reader_ps2_back">Back</string>
+    <string name="reader_pref_word_mark">Mark the word looked up</string>
+    <string name="reader_pref_card_corner">Where the add button stands</string>
+    <string-array name="reader_card_corner_entries">
+        <item>Bottom left</item>
+        <item>Bottom right</item>
+        <item>Top left</item>
+        <item>Top right</item>
+    </string-array>
+    <string-array name="reader_card_corner_values" translatable="false">
+        <item>bottom_left</item>
+        <item>bottom_right</item>
+        <item>top_left</item>
+        <item>top_right</item>
+    </string-array>
+    <string-array name="reader_word_mark_entries">
+        <item>Outline</item>
+        <item>Highlight</item>
+        <item>Not at all</item>
+    </string-array>
+    <string-array name="reader_word_mark_values" translatable="false">
+        <item>outline</item>
+        <item>highlight</item>
+        <item>none</item>
+    </string-array>
 </resources>

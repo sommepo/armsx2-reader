@@ -17,8 +17,28 @@ import com.armsx2.reader.cursor.HoverCursor
  * controller sends, whatever the emulator maps it to.
  */
 object ReaderInput {
-    /** The circle button's bit in the PSP's button word: "yes" on a Japanese console. */
-    const val PSP_CIRCLE = 13
+    // The first controller's inputs by the emulator's own numbers (PadDualshock2::Inputs), which
+    // ReaderNative.pressButton takes. ○ is "yes" on a Japanese console.
+    const val PAD_UP = 0
+    const val PAD_RIGHT = 1
+    const val PAD_DOWN = 2
+    const val PAD_LEFT = 3
+    const val PAD_CIRCLE = 5
+    const val PAD_CROSS = 6
+    const val PAD_START = 9
+    const val PAD_R1 = 12
+
+    /**
+     * The advance button as it was kept before 2026-10-16, by the PSP's bit numbers that were
+     * copied from PPSSPP Reader (13 ○, 14 ✕, 9 R), and its number now; null when [old] is not
+     * one of those.
+     */
+    fun advanceButtonFromPsp(old: Int): Int? = when (old) {
+        13 -> PAD_CIRCLE
+        14 -> PAD_CROSS
+        9 -> PAD_R1
+        else -> null
+    }
 
     /** The button that pauses and resumes the statistics, or -1. */
     @Volatile

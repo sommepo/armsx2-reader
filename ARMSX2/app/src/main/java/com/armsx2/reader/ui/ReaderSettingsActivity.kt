@@ -17,6 +17,7 @@ import com.armsx2.R
 import com.armsx2.reader.ReaderCatalog
 import com.armsx2.reader.ReaderSession
 import com.armsx2.reader.ReaderSettings
+import com.armsx2.reader.SaveSync
 import com.armsx2.reader.stats.ReadingRules
 import com.armsx2.reader.stats.SessionSummary
 
@@ -34,6 +35,7 @@ class ReaderSettingsActivity : ReaderScreen() {
         PANEL("reader_section_panel", R.string.reader_pref_category_panel, R.xml.reader_prefs_panel),
         CARDS("reader_section_cards", R.string.reader_pref_category_mining, R.xml.reader_prefs_cards),
         STATS("reader_section_stats", R.string.reader_pref_category_stats, R.xml.reader_prefs_stats),
+        SAVE_SYNC("reader_section_savesync", R.string.reader_pref_category_savesync, R.xml.reader_prefs_savesync),
         OUTPUT("reader_section_output", R.string.reader_pref_category_output, R.xml.reader_prefs_output)
     }
 
@@ -91,6 +93,8 @@ class ReaderSettingsActivity : ReaderScreen() {
             link("reader_open_games", ReaderGamesActivity::class.java)
             link("reader_open_crt", CrtSettingsActivity::class.java)
             link("reader_open_dictionaries", DictionaryManagerActivity::class.java)
+            // A published build has no save sync.
+            if (!SaveSync.built) findPreference<Preference>(Section.SAVE_SYNC.key)?.isVisible = false
             for (section in Section.values()) {
                 findPreference<Preference>(section.key)?.setOnPreferenceClickListener {
                     (activity as? ReaderSettingsActivity)?.open(section)
@@ -137,15 +141,21 @@ class ReaderSettingsActivity : ReaderScreen() {
 
     /** One section's settings. */
     class SectionPage : PreferenceFragmentCompat() {
+        private val ticks = android.os.Handler(android.os.Looper.getMainLooper())
+        private var shownGeneration = -1L
+        private val tick = object : Runnable {
+            override fun run() {
+                showSaveSync()
+                ticks.postDelayed(this, 500)
+            }
+        }
+
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             val section = section(requireArguments().getString(SECTION)) ?: Section.LOOKUP
+            // Play by touch's first value depends on the device: kept before its switch shows it.
+            ReaderSettings(requireContext()).keepTouchPlayDefault()
             setPreferencesFromResource(section.preferences, rootKey)
-            // A published build has no save sync service to send statistics to.
-            if (!com.armsx2.BuildConfig.READER_SAVE_SYNC) {
-                findPreference<androidx.preference.Preference>("reader_stats_sync_category")?.let {
-                    preferenceScreen.removePreference(it)
-                }
-            }
+            if (section == Section.SAVE_SYNC) bindSaveSync()
             findPreference<Preference>("reader_open_anki")?.setOnPreferenceClickListener {
                 startActivity(Intent(requireContext(), AnkiSetupActivity::class.java))
                 true
@@ -156,6 +166,76 @@ class ReaderSettingsActivity : ReaderScreen() {
                     (value as? String)?.toIntOrNull()?.let { it in 1024..65535 } == true
                 }
             }
+        }
+
+        // ---- Save sync's page ----
+
+        private fun bindSaveSync() {
+            val context = requireContext().applicationContext
+            for (key in listOf(SaveSync.KEY_ENABLED, ReaderSettings.KEY_STATS_SERVER, ReaderSettings.KEY_STATS_CODE,
+                    ReaderSettings.KEY_STATS_DEVICE)) {
+                findPreference<Preference>(key)?.setOnPreferenceChangeListener { _, _ ->
+                    // Read once the new value is kept.
+                    ticks.post { SaveSync.apply(context) }
+                    true
+                }
+            }
+            findPreference<EditTextPreference>(ReaderSettings.KEY_STATS_CODE)?.setOnBindEditTextListener {
+                it.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            }
+            findPreference<Preference>("reader_savesync_status")?.setOnPreferenceClickListener {
+                SaveSync.apply(context)
+                SaveSync.syncNow()
+                true
+            }
+            showSaveSync()
+        }
+
+        private fun showSaveSync() {
+            val status = findPreference<Preference>("reader_savesync_status") ?: return
+            val state = SaveSync.state()
+            status.summary = when {
+                state == null || !state.on -> getString(R.string.reader_pref_savesync_off)
+                state.status.isNotEmpty() -> state.status
+                else -> null
+            }
+            val conflicts = findPreference<androidx.preference.PreferenceCategory>("reader_savesync_conflicts") ?: return
+            val generation = state?.generation ?: -1L
+            if (generation == shownGeneration) return
+            shownGeneration = generation
+            conflicts.removeAll()
+            val list = state?.conflicts.orEmpty()
+            conflicts.isVisible = list.isNotEmpty()
+            for (conflict in list) {
+                conflicts.addPreference(Preference(requireContext()).apply {
+                    isIconSpaceReserved = false
+                    title = conflict.name.ifEmpty { conflict.disc }
+                    summary = conflict.message
+                    setOnPreferenceClickListener {
+                        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                            .setTitle(title)
+                            .setMessage(conflict.message)
+                            .setPositiveButton(R.string.reader_savesync_keep_mine) { _, _ ->
+                                SaveSync.resolve(conflict.title, keepMine = true)
+                            }
+                            .setNegativeButton(R.string.reader_savesync_take_theirs) { _, _ ->
+                                SaveSync.resolve(conflict.title, keepMine = false)
+                            }
+                            .show()
+                        true
+                    }
+                })
+            }
+        }
+
+        override fun onResume() {
+            super.onResume()
+            if (findPreference<Preference>("reader_savesync_status") != null) ticks.post(tick)
+        }
+
+        override fun onPause() {
+            ticks.removeCallbacks(tick)
+            super.onPause()
         }
 
         companion object {
